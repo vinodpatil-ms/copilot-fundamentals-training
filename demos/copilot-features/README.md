@@ -53,7 +53,7 @@ Each file contains **~150 lines** peppered with `globex_` identifiers to give Co
 | Phase | Copilot Features | Action Steps |
 |-------|------------------|--------------|
 | **1 Planning** | Chat, Spaces, Custom Instructions | *Scope impact* → `List files containing "globex_"`<br>*Draft a plan* → save to **Copilot Space (Optional)**<br>*Add repo instruction* → forbid magic numbers |
-| **2 Code Creation** | Ask, Agent, Workspaces, Model Picker | Open Issue → **Workspace** proposes tasks<br>Use **Ask** to create `rename.py`<br>Switch to *Claude Haiku 4.5 or Claude Sonnet 4.5* for fast tests<br>Refine with **Agent** (`skip node_modules`) |
+| **2 Code Creation** | Ask, Agent, Model Picker | Open Issue → **Workspace** proposes tasks<br>Use **Ask** to create `rename.py`<br>Switch to *Claude Haiku 4.5 or Claude Sonnet 4.5* for fast tests<br>Refine with **Agent** (`skip node_modules`) |
 | **3 Reviews** | Coding Agent, PR Summaries, Code Review | `@agent run rename.py & open PR`<br>Read **AI summary** & automated **review comments** |
 | **4 Testing** | Chat commands, Code completions | `@copilot run pytest -q`<br>Ask Chat: *Edge cases we missed?* |
 | **5 Deployment** | Chat in GitHub.com | Merge PR → `@copilot create follow‑up Issue` |
@@ -96,7 +96,7 @@ python -m pytest -q      # sanity check – should pass
 |--------|----------------------|
 | **Change to PLAN Mode** | `Set the stage for the planning session` |
 | **Initial Scope** | `List all files containing "globex_"` |
-| **Full Assessment** | `@workspace List all files containing "globex_"` |
+| **Full Assessment** | `List all files containing "globex_"` |
 | **Draft plan** | `Draft a plan to rename "globex_" → "chroma_" with backup, tests, CI gate, rollback.` |
 | **Save to Copilot Spaces or Similar** | ⋮ → **Save as Doc** → _Chroma‑Rename_ *(requires Spaces setup)* |
 | **Repo rule** | Create `.github/copilot-instructions.md`:<br>`- Disallow magic numbers; use named constants.` → `git add & commit` |
@@ -110,22 +110,21 @@ python -m pytest -q      # sanity check – should pass
 ## 🛠️ Phase 2 · Code (≤ 7 min)
 
 1. **Workspace Method** – on GitHub, create new Issue **"Rename globex_ to chroma_"** → **Open in Copilot Workspace**.  
-2. **Chat Method** – Alternatively, use `@workspace Rename globex_ to chroma_` in Copilot Chat
+2. **Chat Method** – Alternatively, use Agent mode and prompt `Rename globex_ to chroma_` in Copilot Chat
 3. **Lets Generate the Script** (ASK mode):
    - Create a new file in the cli directory named rename.py
    - Use prompt: `Generate a Python script that recursively renames any file or symbol starting with "globex_" to "chroma_", skip .git & node_modules, print summary.`
 4. **Show off the Model Picker** – select **Claude 4.5 Sonnet or Claude Haiku 4.5** → switch to Agent mode
 5. **Lets Refine the Script** (AGENT mode):
    ```
-   @workspace #codebase Add pytest tests covering rename, binary‑skip, and --check dry‑run.
+   Add pytest tests covering rename, binary‑skip, and --check dry‑run.
    ```
 6. **Refine the Script further** (AGENT mode):
    ```
-   @workspace #codebase Replace print with logger, add --check flag (dry‑run).
+   Replace print with logger, add --check flag (dry‑run).
    ```
 
-> 🎯 **Key Insight**: The `@workspace` keyword provides full repository context, dramatically improving Copilot's understanding vs. single-file context.
-
+> 
 ---
 
 ## 🤖 Phase 3 · Review & PR (≤ 4 min)
