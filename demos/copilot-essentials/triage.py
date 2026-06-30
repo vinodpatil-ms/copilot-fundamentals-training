@@ -25,12 +25,28 @@ from typing import Iterable, Tuple
 
 def read_lines(file_path: Path) -> Iterable[str]:
     """Open plain or gzipped log file and yield each line (stripped)."""
-    pass  # ← Copilot will fill this in
+    if file_path.suffix == ".gz":
+        with gzip.open(file_path, "rt", encoding="utf-8") as f:
+            yield from (line.strip() for line in f)
+    else:
+        with open(file_path, "r", encoding="utf-8") as f:
+            yield from (line.strip() for line in f)
 
 
 def parse_line(line: str) -> Tuple[datetime, int, str] | None:
     """Return (timestamp_utc, status_code_int, url_path) or None if malformed."""
-    pass  # ← Copilot will fill this in
+    # Example regex for common/combined log format
+    log_pattern = re.compile(
+        r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) - - \[([^\]]+)\] "(\w+) ([^"]+)" (\d+) (\d+)'
+    )
+    match = log_pattern.match(line)
+    if not match:
+        return None
+
+    ip, timestamp_str, method, path, status_str, size_str = match.groups()
+    timestamp = datetime.strptime(timestamp_str, "%d/%b/%Y:%H:%M:%S %z").astimezone(timezone.utc)
+    status = int(status_str)
+    return (timestamp, status, path)
 
 
 def triage(
@@ -39,17 +55,56 @@ def triage(
     wanted_status: set[int] | None
 ) -> Counter[Tuple[int, str]]:
     """Aggregate counts for lines within the window and matching status filter."""
-    pass  # ← Copilot will fill this in
+    now = datetime.now(timezone.utc)
+    window_start = now - timedelta(minutes=minutes)
+    counter = Counter()
+
+    for line in lines:
+        parsed = parse_line(line)
+        if not parsed:
+            continue
+
+        timestamp, status, path = parsed
+        if timestamp < window_start:
+            continue
+
+        if wanted_status is not None and status not in wanted_status:
+            continue
+
+        counter[(status, path)] += 1
+
+    return counter
 
 
 def render(counter: Counter[Tuple[int, str]], top: int) -> None:
     """Pretty‑print a Markdown‑style table of the top offenders."""
     pass  # ← Copilot will fill this in
+    if not counter:
+        print("No matches found.")
+        return
+
+    print(f"| Rank | Status | Path | Hits |")
+    print(f"|------|--------|------|------|")
+    for i, ((status, path), hits) in enumerate(counter.most_common(top), start=1):
+        print(f"| {i} | {status} | {path} | {hits} |")
 
 
 def main() -> None:
     """Wire everything together with argparse CLI options."""
     pass  # ← Copilot will fill this in
+    parser = argparse.ArgumentParser(description="Triage log files.")
+    parser.add_argument("--file", required=True, help="Log file to analyze")
+    parser.add_argument("--minutes", type=int, default=15, help="Time window in minutes")
+    parser.add_argument("--status", type=str, help="Comma-separated list of status codes to include")
+    parser.add_argument("--top", type=int, default=10, help="Number of top offenders to display")
+
+    args = parser.parse_args()
+
+    wanted_status = set(int(s) for s in args.status.split(",")) if args.status else None
+
+    lines = read_lines(Path(args.file))
+    counter = triage(lines, args.minutes, wanted_status)
+    render(counter, args.top)
 
 
 if __name__ == "__main__":
