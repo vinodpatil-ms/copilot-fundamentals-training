@@ -3,7 +3,7 @@
     "authDocs": {
       "type": "stdio",
       "command": "python3",
-      "args": ["mcp_auth_docs.py"],
+      "args": ["demos/copilot-techniques/mcp_auth_docs.py"],
       "cwd": "${workspaceFolder}"
     }
   }
